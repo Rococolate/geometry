@@ -23,11 +23,13 @@ var Gometry = (function (exports) {
     return Constructor;
   }
 
-  /**
-   * @author wuguanxi
-   * @date 2019-6-5
-   * @desc 碰撞检测 Intersect 及其配套的 二维向量 Vector2d 圆形 Circle 矩形 Rect
-   */
+  function isFunction(item) {
+    return Object.prototype.toString.call(item).slice(8, -1) === 'Function';
+  }
+  function isArray(item) {
+    return Object.prototype.toString.call(item).slice(8, -1) === 'Array';
+  }
+
   var Vector2d =
   /*#__PURE__*/
   function () {
@@ -104,7 +106,7 @@ var Gometry = (function (exports) {
         }
 
         return new Vector2d(vx, vy);
-      } //向量的旋转
+      } //向量的旋转 https://en.wikipedia.org/wiki/Rotation_matrix
 
     }, {
       key: "rotate",
@@ -153,106 +155,107 @@ var Gometry = (function (exports) {
       this.w = w;
       this.h = h;
       this.rotation = rotation;
-      this.init();
     }
 
     _createClass(Rect, [{
-      key: "init",
-      value: function init() {
-        var _this = this;
-
-        var x = this.x,
-            y = this.y,
-            w = this.w,
-            h = this.h,
-            rotation = this.rotation;
-
-        this.C = function () {
-          return new Vector2d(x, y);
-        };
-
-        this._A1 = function () {
-          return new Vector2d(x - w / 2, y - h / 2);
-        };
-
-        this._A2 = function () {
-          return new Vector2d(x + w / 2, y - h / 2);
-        };
-
-        this._A3 = function () {
-          return new Vector2d(x + w / 2, y + h / 2);
-        };
-
-        this._A4 = function () {
-          return new Vector2d(x - w / 2, y + h / 2);
-        };
-
-        this._axisX = function () {
-          return new Vector2d(1, 0);
-        };
-
-        this._axisY = function () {
-          return new Vector2d(0, 1);
-        };
-
-        this._CA1 = function () {
-          return Vector2d.sub(_this._A1(), _this.C());
-        };
-
-        this._CA2 = function () {
-          return Vector2d.sub(_this._A2(), _this.C());
-        };
-
-        this._CA3 = function () {
-          return Vector2d.sub(_this._A3(), _this.C());
-        };
-
-        this._CA4 = function () {
-          return Vector2d.sub(_this._A4(), _this.C());
-        };
-
-        this._rotation = function () {
-          return rotation / 180 * Math.PI;
-        };
-
-        this.A1 = rotation % 360 === 0 ? function () {
-          return _this._A1();
-        } : function () {
-          return Vector2d.add(_this.C(), Vector2d.rotate(_this._CA1(), _this._rotation()));
-        };
-        this.A2 = rotation % 360 === 0 ? function () {
-          return _this._A2();
-        } : function () {
-          return Vector2d.add(_this.C(), Vector2d.rotate(_this._CA2(), _this._rotation()));
-        };
-        this.A3 = rotation % 360 === 0 ? function () {
-          return _this._A3();
-        } : function () {
-          return Vector2d.add(_this.C(), Vector2d.rotate(_this._CA3(), _this._rotation()));
-        };
-        this.A4 = rotation % 360 === 0 ? function () {
-          return _this._A4();
-        } : function () {
-          return Vector2d.add(_this.C(), Vector2d.rotate(_this._CA4(), _this._rotation()));
-        };
-        this.axisX = rotation % 360 === 0 ? function () {
-          return _this._axisX();
-        } : function () {
-          return Vector2d.rotate(_this._axisX(), _this._rotation());
-        };
-        this.axisY = rotation % 360 === 0 ? function () {
-          return _this._axisY();
-        } : function () {
-          return Vector2d.rotate(_this._axisY(), _this._rotation());
-        };
-
-        this._vertexs = function () {
-          return [_this._A1(), _this._A2(), _this._A3(), _this._A4()];
-        };
-
-        this.vertexs = function () {
-          return [_this.A1(), _this.A2(), _this.A3(), _this.A4()];
-        };
+      key: "C",
+      get: function get() {
+        return new Vector2d(this.x, this.y);
+      }
+    }, {
+      key: "_A1",
+      get: function get() {
+        return new Vector2d(this.x - this.w / 2, this.y - this.h / 2);
+      }
+    }, {
+      key: "_A2",
+      get: function get() {
+        return new Vector2d(this.x + this.w / 2, this.y - this.h / 2);
+      }
+    }, {
+      key: "_A3",
+      get: function get() {
+        return new Vector2d(this.x + this.w / 2, this.y + this.h / 2);
+      }
+    }, {
+      key: "_A4",
+      get: function get() {
+        return new Vector2d(this.x - this.w / 2, this.y + this.h / 2);
+      }
+    }, {
+      key: "_axisX",
+      get: function get() {
+        return new Vector2d(1, 0);
+      }
+    }, {
+      key: "_axisY",
+      get: function get() {
+        return new Vector2d(0, 1);
+      }
+    }, {
+      key: "_CA1",
+      get: function get() {
+        return Vector2d.sub(this._A1, this.C);
+      }
+    }, {
+      key: "_CA2",
+      get: function get() {
+        return Vector2d.sub(this._A2, this.C);
+      }
+    }, {
+      key: "_CA3",
+      get: function get() {
+        return Vector2d.sub(this._A3, this.C);
+      }
+    }, {
+      key: "_CA4",
+      get: function get() {
+        return Vector2d.sub(this._A4, this.C);
+      }
+    }, {
+      key: "_rotation",
+      get: function get() {
+        return this.rotation / 180 * Math.PI;
+      }
+    }, {
+      key: "A1",
+      get: function get() {
+        return this.rotation % 360 === 0 ? this._A1 : Vector2d.add(this.C, Vector2d.rotate(this._CA1, this._rotation));
+      }
+    }, {
+      key: "A2",
+      get: function get() {
+        return this.rotation % 360 === 0 ? this._A2 : Vector2d.add(this.C, Vector2d.rotate(this._CA2, this._rotation));
+      }
+    }, {
+      key: "A3",
+      get: function get() {
+        return this.rotation % 360 === 0 ? this._A3 : Vector2d.add(this.C, Vector2d.rotate(this._CA3, this._rotation));
+      }
+    }, {
+      key: "A4",
+      get: function get() {
+        return this.rotation % 360 === 0 ? this._A4 : Vector2d.add(this.C, Vector2d.rotate(this._CA4, this._rotation));
+      }
+    }, {
+      key: "axisX",
+      get: function get() {
+        return this.rotation % 360 === 0 ? this._axisX : Vector2d.rotate(this._axisX, this._rotation);
+      }
+    }, {
+      key: "axisY",
+      get: function get() {
+        return this.rotation % 360 === 0 ? this._axisY : Vector2d.rotate(this._axisY, this._rotation);
+      }
+    }, {
+      key: "_vertexs",
+      get: function get() {
+        return [this._A1, this._A2, this._A3, this._A4];
+      }
+    }, {
+      key: "vertexs",
+      get: function get() {
+        return [this.A1, this.A2, this.A3, this.A4];
       }
     }], [{
       key: "is",
@@ -279,18 +282,12 @@ var Gometry = (function (exports) {
       this.x = x;
       this.y = y;
       this.r = r;
-      this.init();
     }
 
     _createClass(Circle, [{
-      key: "init",
-      value: function init() {
-        var x = this.x,
-            y = this.y;
-
-        this.P = function () {
-          return new Vector2d(x, y);
-        };
+      key: "P",
+      get: function get() {
+        return new Vector2d(this.x, this.y);
       }
     }], [{
       key: "is",
@@ -309,13 +306,13 @@ var Gometry = (function (exports) {
       if (!Rect.is(rect)) return false;
       if (!Circle.is(circle)) return false;
       var rotation = rect.rotation;
-      var C = rect.C();
+      var C = rect.C;
       var P;
 
       if (rotation % 360 === 0) {
-        P = circle.P();
+        P = circle.P;
       } else {
-        P = Vector2d.add(C, Vector2d.rotate(Vector2d.sub(circle.P(), C), rect._rotation() * -1));
+        P = Vector2d.add(C, Vector2d.rotate(Vector2d.sub(circle.P, C), rect._rotation * -1));
       }
 
       return P;
@@ -324,9 +321,9 @@ var Gometry = (function (exports) {
       if (!Rect.is(rect)) return false;
       if (!Circle.is(circle)) return false;
       var rotation = rect.rotation;
-      var C = rect.C();
+      var C = rect.C;
       var r = circle.r;
-      var A3 = rotation % 360 === 0 ? rect.A3() : rect._A3();
+      var A3 = rotation % 360 === 0 ? rect.A3 : rect._A3;
       var P = Intersect.p(rect, circle);
       var h = Vector2d.sub(A3, C);
       var v = new Vector2d(Math.abs(P.vx - C.vx), Math.abs(P.vy - C.vy));
@@ -342,10 +339,10 @@ var Gometry = (function (exports) {
     _OBBrectRectIntersect: function _OBBrectRectIntersect(rect1, rect2) {
       if (!Rect.is(rect1)) return false;
       if (!Rect.is(rect2)) return false;
-      var rect1AxisX = rect1.axisX();
-      var rect1AxisY = rect1.axisY();
-      var rect2AxisX = rect2.axisX();
-      var rect2AxisY = rect2.axisY();
+      var rect1AxisX = rect1.axisX;
+      var rect1AxisY = rect1.axisY;
+      var rect2AxisX = rect2.axisX;
+      var rect2AxisY = rect2.axisY;
       if (!Intersect._cross(rect1, rect2, rect1AxisX)) return false;
       if (!Intersect._cross(rect1, rect2, rect1AxisY)) return false;
       if (!Intersect._cross(rect1, rect2, rect2AxisX)) return false;
@@ -353,12 +350,12 @@ var Gometry = (function (exports) {
       return true;
     },
     _cross: function _cross(rect1, rect2, axis) {
-      var vertexs1ScalarProjection = rect1.vertexs().map(function (vex) {
+      var vertexs1ScalarProjection = rect1.vertexs.map(function (vex) {
         return Vector2d.dot(vex, axis);
       }).sort(function (a, b) {
         return a - b;
       });
-      var vertexs2ScalarProjection = rect2.vertexs().map(function (vex) {
+      var vertexs2ScalarProjection = rect2.vertexs.map(function (vex) {
         return Vector2d.dot(vex, axis);
       }).sort(function (a, b) {
         return a - b;
@@ -366,21 +363,20 @@ var Gometry = (function (exports) {
       var rect1Min = vertexs1ScalarProjection[0];
       var rect1Max = vertexs1ScalarProjection[vertexs1ScalarProjection.length - 1];
       var rect2Min = vertexs2ScalarProjection[0];
-      var rect2Max = vertexs2ScalarProjection[vertexs1ScalarProjection.length - 1]; // console.log(rect1Min,rect1Max,rect2Min,rect2Max);
-
+      var rect2Max = vertexs2ScalarProjection[vertexs1ScalarProjection.length - 1];
       return rect1Max >= rect2Min && rect2Max >= rect1Min;
     },
     _AABBrectRectIntersect: function _AABBrectRectIntersect(rect1, rect2) {
       if (!Rect.is(rect1)) return false;
       if (!Rect.is(rect2)) return false;
-      var P = rect2.C();
+      var P = rect2.C;
       var w2 = rect2.w;
       var h2 = rect2.h;
       var w = rect1.w,
           h = rect1.h,
           x = rect1.x,
           y = rect1.y;
-      var C = rect1.C();
+      var C = rect1.C;
       var A3 = new Vector2d(x + w / 2 + w2 / 2, y + h / 2 + h2 / 2);
       var H = Vector2d.sub(A3, C);
       var v = new Vector2d(Math.abs(P.vx - C.vx), Math.abs(P.vy - C.vy));
@@ -390,14 +386,58 @@ var Gometry = (function (exports) {
     circleCircleIntersect: function circleCircleIntersect(circle1, circle2) {
       if (!Circle.is(circle1)) return false;
       if (!Circle.is(circle2)) return false;
-      var P1 = circle1.P();
-      var P2 = circle2.P();
+      var P1 = circle1.P;
+      var P2 = circle2.P;
       var r1 = circle1.r;
       var r2 = circle2.r;
       var u = Vector2d.sub(P1, P2);
       return u.length() <= r1 + r2;
+    },
+    intersectAnyTow: function intersectAnyTow(any1, any2) {
+      return moreCompareMoreTrue(any1, any2, anyTowIntersect);
     }
   };
+
+  function oneCompareMoreTrue(one, more, fn) {
+    if (!isFunction(fn)) return false;
+    if (!isArray(more)) return fn(one, more);
+
+    for (var i = 0; i < more.length; i++) {
+      if (fn(one, more[i])) return true;
+    }
+
+    return false;
+  }
+
+  function moreCompareMoreTrue(more1, more2, fn) {
+    if (!isFunction(fn)) return false;
+    if (!isArray(more1)) return oneCompareMoreTrue(more1, more2, fn);
+    if (!isArray(more2)) return oneCompareMoreTrue(more2, more1, fn);
+
+    for (var i = 0; i < more1.length; i++) {
+      for (var j = 0; j < more2.length; j++) {
+        if (fn(more1[i], more2[j])) return true;
+      }
+    }
+
+    return false;
+  }
+
+  function anyTowIntersect(a, b) {
+    var typeA = gomType(a);
+    var typeB = gomType(b);
+    if (typeA === "rect" && typeB === "rect") return Intersect.rectRectIntersect(a, b);
+    if (typeA === "circle" && typeB === "circle") return Intersect.circleCircleIntersect(a, b);
+    if (typeA === "rect" && typeB === "circle") return Intersect.rectCircleIntersect(a, b);
+    if (typeB === "rect" && typeA === "circle") return Intersect.rectCircleIntersect(b, a);
+    return false;
+  }
+
+  function gomType(object) {
+    if (Rect.is(object)) return "rect";
+    if (Circle.is(object)) return "circle";
+    return "unknow";
+  }
 
   exports.Circle = Circle;
   exports.Intersect = Intersect;
